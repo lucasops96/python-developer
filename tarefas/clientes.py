@@ -21,21 +21,34 @@ class Clientes(ABC):
         for i in self.lista_clientes:
             print(i,'\n')
     
-    def pesquisa(self,tipo_cliente, chave):
-        for i in self.lista_clientes:
-            if i['tipo_cliente'] == tipo_cliente and i['cpf' if tipo_cliente == 'Física' else 'cnpj'] == chave:
-                return print(i)
     
     def pesquisa_tipo_cliente(self, tipo_cliente):
+        os.system('clear')
         print(f'Clientes do tipo {tipo_cliente}')
         for cliente in self.lista_clientes:
             if cliente['tipo_cliente'] == tipo_cliente:
                 print(cliente,'\n')
     
-    def pesquisa_documento(self,tipo_cliente, documento):
-        for cliente in self.lista_clientes:
-            if cliente['tipo_cliente'] == tipo_cliente and cliente['cpf' if tipo_cliente == 'Física' else 'cnpj'] == documento:
-                return print(cliente)
+    def pesquisa_documento(self,documento):
+        os.system('clear')
+        if not documento.isnumeric():
+            return print('Documento inválido, digite apenas números')
+        else:
+            if len(doc) == 11:
+                tipo_cliente = 'Física'
+                documento = formatar_cpf(documento)
+            elif len(doc) == 14:
+                tipo_cliente = 'Jurídica'
+                documento = formatar_cnpj(documento)
+
+            for cliente in self.lista_clientes:
+                if cliente['tipo_cliente'] == tipo_cliente and cliente['cpf' if tipo_cliente == 'Física' else 'cnpj'] == documento:
+                    return print(f'Cliente do documento {documento}: {tipo_cliente}\n',cliente,'\n')
+        
+        return print(f'Nenhum cliente cadastrado com esse documento: {documento}\n')
+    
+    
+    
 
 class Fisica(Clientes):
     def __init__(self,rua, numero, bairro, cep, cidade, estado, tipo_cliente,cpf,nome):
@@ -77,6 +90,42 @@ class Juridica(Clientes):
         })
 
 
+def formatar_cpf(cpf):
+    cpf = f'{cpf[0:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:11]}'
+    return cpf
+
+def formatar_cnpj(cnpj):
+    cnpj = f'{cnpj[0:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}'
+    return cnpj
+
+def validar_cpf(cpf):
+    os.system('clear')
+    if not cpf.isnumeric():
+        print('CPF inválido, digite apenas números.')
+        return False
+    
+    elif len(cpf) != 11:
+        print('CPF inválido, quantidade de digitos deve ser 11.')
+        return False
+    
+    cpf = formatar_cpf(cpf)
+    return cpf 
+    
+def validar_cnpj(cnpj):
+    os.system('clear')
+    if not cnpj.isnumeric():
+        print('CNPJ inválido, digite apenas números.')
+        return False
+    
+    elif len(cnpj) != 14:
+        print('CNPJ inválido, quantidade de digitos deve ser 14.')
+        return False
+    
+    cnpj = formatar_cnpj(cnpj)
+    return cnpj
+
+
+
 # p1 = Fisica('Padre Miguel','88','centro','6225000','Patolândia','Paraíba','Física','05655892375','Miguel')
 # p1.cadastrar_cliente()
 
@@ -91,8 +140,9 @@ class Juridica(Clientes):
 op = 1
 
 while op != 0:
-    op = int(input('1-PARA CADASTRAR CLIENTE FISÍCO\n2-PARA CADASTRAR CLIENTE JURÍDICO\n3-PESQUISAR POR TIPO CLIENTE\n4-PESQUISAR POR DOCUMENTO\n: '))
-
+    
+    op = int(input('1-PARA CADASTRAR CLIENTE FISÍCO\n2-PARA CADASTRAR CLIENTE JURÍDICO\n3-PESQUISAR POR TIPO CLIENTE\n4-PESQUISAR POR DOCUMENTO\n0-PARA SAIR DO SISTEMA\n: '))
+    # cadastro pesso f[isdica]
     if op == 1:
         cpf = input('Digite o CPF: ')
         nome = input('Digite o Nome: ')
@@ -104,22 +154,14 @@ while op != 0:
         estado = input('Digite o Estado: ')
         tipo_cliente = 'Física'
 
-        if not cpf.isnumeric():
-            os.system('clear')
-            print('CPF inválido, digite apenas números.')
-            
-        
-        elif len(cpf) != 11:
-            os.system('clear')
-            print('CPF inválido, quantidade de digitos deve ser 11.')
-    
-        else:
-            cpf = f'{cpf[0:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:11]}'
+        cpf = validar_cpf(cpf)
+
+        if cpf:
             pf = Fisica(rua,numero,bairro,cep,cidade,estado,tipo_cliente,cpf,nome)
             pf.cadastrar_cliente()
-            os.system('clear')
             print('CLIENTE CADASTRADO\n')
-    
+        
+    # cadastro pessoa juridica
     elif op == 2:
         cnpj = input('Digite o CNPJ: ')    
         razao_social = input('Digite a Razão Social: ')
@@ -131,52 +173,26 @@ while op != 0:
         estado = input('Digite o Estado: ')
         tipo_cliente = 'Jurídica'
 
-        if not cnpj.isnumeric():
-             os.system('clear')
-             print('CNPJ inválido, digite apenas números.')
-        
-        elif len(cnpj) != 14:
-            os.system('clear')
-            print('CNPJ inválido, quantidade de digitos deve ser 14.')
-            
-        
-        else:
-            cnpj = f'{cnpj[0:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}'
+        cnpj = validar_cnpj(cnpj)
+
+        if cnpj:
             pj = Juridica(rua,numero,bairro,cep,cidade,estado,tipo_cliente,cnpj,razao_social)
             pj.cadastrar_cliente()
-            os.system('clear')
             print('CLIENTE CADASTRADO\n')
             
-    
+    # pesquisar clientes físicos ou jurídicos
     elif op == 3:
-        os.system('clear')
         tipo = int(input('1-PARA PESQUISAR CLIENTES FÍSICO\n2-PARA CLIENTES JURÍDICOS\n:'))
-        pf.pesquisa_tipo_cliente('Física' if tipo == 1 else 'Jurídica')
-        
-    
-    elif op == 4:
-        os.system('clear')
-        doc = input('Digite CPF/CNPJ: ')
-        if doc.isnumeric():
-            if len(doc) == 11:
-                os.system('clear')
-                tipo_cliente_doc = 'Física'
-                doc = f'{doc[0:3]}.{doc[3:6]}.{doc[6:9]}-{doc[9:11]}'
-                pf.pesquisa_documento(tipo_cliente_doc,doc)
-            
-            elif len(doc) == 14:
-                os.system('clear')
-                tipo_cliente_doc = 'Jurídica'
-                doc = f'{doc[0:2]}.{doc[2:5]}.{doc[5:8]}/{doc[8:12]}-{doc[12:14]}'
-                pf.pesquisa_documento(tipo_cliente_doc,doc)
-            
-            else:
-                os.system('clear')
-                print('Erro de digitação ou valores não encontrados.')
-    
+        if tipo == 1 or tipo == 2:
+            pf.pesquisa_tipo_cliente('Física' if tipo == 1 else 'Jurídica')
         else:
-            os.system('clear')
-            print('Documento inválido, digite apenas números.')
-            
+            print('Digito errado, tente novamente.')
+        
+    # pesquisar um cliente pelo documento
+    elif op == 4:
+        doc = input('Digite CPF/CNPJ: ')
+        pf.pesquisa_documento(doc)
+    
+       
 
 
